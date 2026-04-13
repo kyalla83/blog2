@@ -10,13 +10,14 @@ body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; backgrou
 header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 1.2rem 2rem; }
 header h1 { font-size: 1.3rem; font-weight: 700; }
 .container { max-width: 820px; margin: 2rem auto; padding: 0 1rem; }
-.post-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 1rem; cursor: pointer; }
+.date-group { margin-bottom: 2rem; }
+.date-label { font-size: 13px; color: #999; font-weight: 500; margin-bottom: 10px; padding-left: 4px; }
+.post-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 10px; cursor: pointer; }
 .post-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-.post-date { font-size: 12px; color: #999; margin-bottom: 6px; }
-.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; background: #eef4ff; color: #4a6cf7; margin-right: 4px; margin-bottom: 8px; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 20px; background: #eef4ff; color: #4a6cf7; margin-bottom: 8px; }
 .post-preview { font-size: 14px; color: #555; line-height: 1.6; }
-.detail { display: none; background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 2rem; margin-top: 1rem; }
-.content { font-size: 15px; line-height: 1.9; white-space: pre-wrap; word-break: break-word; }
+.detail { display: none; background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 2rem; margin-bottom: 1rem; }
+.content { font-size: 15px; line-height: 1.9; white-space: pre-wrap; word-break: break-word; margin-top: 1rem; }
 .copy-btn { margin-top: 1.2rem; padding: 8px 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; font-size: 13px; cursor: pointer; }
 .close-btn { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
 #status { text-align: center; padding: 3rem; color: #999; }
@@ -26,11 +27,8 @@ header h1 { font-size: 1.3rem; font-weight: 700; }
 <header><h1>🍽️ 오늘의 맛집 블로그</h1></header>
 <div class="container">
   <div id="list"></div>
-  <div class="detail" id="detail"></div>
 </div>
 <script>
-const BASE = location.href.includes('github.io') ? '' : '';
-
 async function init() {
   const el = document.getElementById('list');
   el.innerHTML = '<div id="status">불러오는 중...</div>';
@@ -39,30 +37,44 @@ async function init() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const posts = await r.json();
     if (!posts.length) { el.innerHTML = '<div id="status">아직 포스트가 없어요.</div>'; return; }
-    el.innerHTML = posts.map(p => `
-      <div class="post-card" onclick="show('${p.date}')">
-        <div class="post-date">${p.date}</div>
-        <span class="badge">${p.region}</span><span class="badge">${p.category}</span>
-        <div class="post-preview">${p.preview.replace(/\\n/g, ' ')}</div>
+
+    // 날짜별 그룹핑
+    const groups = {};
+    posts.forEach(p => {
+      if (!groups[p.date]) groups[p.date] = [];
+      groups[p.date].push(p);
+    });
+
+    el.innerHTML = Object.keys(groups).sort().reverse().map(date => `
+      <div class="date-group">
+        <div class="date-label">📅 ${date}</div>
+        ${groups[date].map(p => `
+          <div class="detail" id="detail-${p.date}-${p.slug}"></div>
+          <div class="post-card" onclick="show('${p.date}','${p.slug}')">
+            <span class="badge">${p.keyword}</span>
+            <div class="post-preview">${p.preview.replace(/\\n/g,' ')}</div>
+          </div>
+        `).join('')}
       </div>`).join('');
   } catch(e) {
     el.innerHTML = '<div id="status">오류: ' + e.message + '</div>';
   }
 }
 
-async function show(date) {
-  const d = document.getElementById('detail');
+async function show(date, slug) {
+  const id = 'detail-' + date + '-' + slug;
+  const d  = document.getElementById(id);
+  if (d.style.display === 'block') { d.style.display = 'none'; return; }
   d.style.display = 'block';
   d.innerHTML = '불러오는 중...';
   d.scrollIntoView({ behavior: 'smooth' });
-  const r = await fetch('posts/' + date + '.json?v=' + Date.now());
+  const r = await fetch('posts/' + date + '-' + slug + '.json?v=' + Date.now());
   const p = await r.json();
   d.innerHTML = `
     <button class="close-btn" onclick="this.parentElement.style.display='none'">✕</button>
-    <div class="post-date">${p.date}</div>
-    <span class="badge">${p.region}</span><span class="badge">${p.category}</span>
-    <div class="content" style="margin-top:1rem">${p.content}</div>
-    <button class="copy-btn" onclick="navigator.clipboard.writeText(document.querySelector('.content').innerText).then(()=>{this.textContent='✅ 복사됨!';setTimeout(()=>this.textContent='📋 복사',2000)})">📋 복사</button>`;
+    <span class="badge">${p.keyword}</span>
+    <div class="content">${p.content}</div>
+    <button class="copy-btn" onclick="navigator.clipboard.writeText(document.querySelector('#${id} .content').innerText).then(()=>{this.textContent='✅ 복사됨!';setTimeout(()=>this.textContent='📋 복사',2000)})">📋 네이버 블로그에 붙여넣기용 복사</button>`;
 }
 
 init();
