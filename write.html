@@ -106,7 +106,7 @@ const SHOWS = [
 function saveKey() {
   const k = document.getElementById('apiKey').value.trim();
   if (!k) return;
-  sessionStorage.setItem('ak', k);
+  localStorage.setItem('ak', k);
   document.getElementById('apiKey').value = '';
   document.getElementById('apiKey').placeholder = '저장됨';
   const st = document.getElementById('keyStatus');
@@ -115,7 +115,7 @@ function saveKey() {
 }
 
 function getKey() {
-  return sessionStorage.getItem('ak') || document.getElementById('apiKey').value.trim();
+  return localStorage.getItem('ak') || document.getElementById('apiKey').value.trim();
 }
 
 async function callClaude(apiKey, prompt) {
@@ -173,7 +173,7 @@ ${names ? '소개된 맛집 상호명:\n' + names : ''}
 async function generateAll() {
   const apiKey = getKey();
   if (!apiKey) { alert('API 키를 먼저 입력해주세요.'); return; }
-  sessionStorage.setItem('ak', apiKey);
+  localStorage.setItem('ak', apiKey);
   const btn = document.getElementById('genBtn');
   btn.disabled = true; btn.textContent = '생성 중...';
   for (const show of SHOWS) { await generateOne(show, apiKey); }
@@ -188,7 +188,7 @@ function copy(id) {
   });
 }
 
-if (sessionStorage.getItem('ak')) {
+if (localStorage.getItem('ak')) {
   document.getElementById('apiKey').placeholder = 'API 키 저장됨';
 }
 </script>
