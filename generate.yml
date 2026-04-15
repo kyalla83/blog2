@@ -2,7 +2,7 @@ name: 매일 맛집 블로그 자동 생성
 
 on:
   schedule:
-    - cron: '0 9 * * 1-5'   # UTC 09:00 = 한국 18:00 (평일만)
+    - cron: '0 9 * * 1-5'   # UTC 09:00 = 한국 18:20 (평일만)
   workflow_dispatch:
 
 jobs:
