@@ -7,7 +7,7 @@ from datetime import datetime
 
 # 검색 키워드 → 블로그 파일명 매핑
 KEYWORDS = [
-    {"keyword": "생생정보통 맛집",  "slug": "saengsaeng"},
+    {"keyword": "2TV 생생정보 맛집",  "slug": "saengsaeng"},
     {"keyword": "생방송투데이 맛집", "slug": "today"},
     {"keyword": "6시내고향 맛집",   "slug": "hometown"},
 ]
